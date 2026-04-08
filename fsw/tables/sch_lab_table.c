@@ -24,6 +24,12 @@
 #include "cfe_msgids.h"
 
 /*
+ * Bridge lab uses legacy/static MsgIds.
+ * CF_WAKE_UP_MID topic id is 0xB5 (see CF defaults), command MsgId becomes 0x18B5.
+ */
+#define BRIDGE_CF_WAKE_UP_MID 0x18B5u
+
+/*
 ** SCH Lab schedule table
 ** When populating this table:
 **  1. The entire table is processed (SCH_LAB_MISSION_MAX_SCHEDULE_ENTRIES) but entries with a
@@ -35,20 +41,21 @@
 SCH_LAB_ScheduleTable_t Schedule = {
     .TickRate = 100,
     .Config   = {
-        /*
-        ** This is an empty default table.
-        ** Projects should override this default table with their own configurations.
-        ** Examples of cFE HK packet requests are shown in the comment below.
-        */
-        {CFE_SB_MSGID_RESERVED, 0, 0},
-        /*
-        ** Example of a cFE HK packet requests
+        /* Core housekeeping */
         {CFE_SB_MSGID_WRAP_VALUE(CFE_ES_SEND_HK_MID), 100, 0},
         {CFE_SB_MSGID_WRAP_VALUE(CFE_TBL_SEND_HK_MID), 50, 0},
         {CFE_SB_MSGID_WRAP_VALUE(CFE_TIME_SEND_HK_MID), 98, 0},
         {CFE_SB_MSGID_WRAP_VALUE(CFE_SB_SEND_HK_MID), 97, 0},
         {CFE_SB_MSGID_WRAP_VALUE(CFE_EVS_SEND_HK_MID), 96, 0},
-        */
+
+        /*
+         * CF engine wakeup.
+         * Without this, CF will not run `CF_WakeupCmd()` and will not drain CF_CH0_RX/CF_CH1_RX.
+         */
+        {CFE_SB_MSGID_WRAP_VALUE(BRIDGE_CF_WAKE_UP_MID), 10, 0}, /* 10 Hz when TickRate=100 */
+
+        /* Zero-fill unused slots */
+        {CFE_SB_MSGID_RESERVED, 0, 0},
     }
 };
 
